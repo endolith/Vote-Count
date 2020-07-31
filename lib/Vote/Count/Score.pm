@@ -26,7 +26,6 @@ no warnings 'experimental';
 use Vote::Count::RankCount;
 # use Try::Tiny;
 # use boolean;
-# use Data::Printer;
 
 =pod
 

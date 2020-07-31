@@ -75,8 +75,7 @@ no warnings 'experimental';
 
 use Carp;
 use List::Util qw( min max sum );
-use Data::Printer;
-use Data::Dumper;
+# use Data::Dumper;
 use Sort::Hash;
 
 # Similar needs will arise elsewhere. this method should be generalized

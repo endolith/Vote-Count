@@ -8,8 +8,6 @@ use Storable 3.15 qw(dclone);
 
 use namespace::autoclean;
 
-# use Data::Printer;
-
 no warnings 'experimental';
 
 our $VERSION='1.06';

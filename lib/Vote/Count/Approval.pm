@@ -8,7 +8,6 @@ package Vote::Count::Approval;
 use Moose::Role;
 
 no warnings 'experimental';
-use Data::Printer;
 use Carp;
 
 our $VERSION='1.06';

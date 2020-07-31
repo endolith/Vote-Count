@@ -56,7 +56,6 @@ use Vote::Count::Matrix;
 use Carp;
 # use Try::Tiny;
 # use Text::Table::Tiny 'generate_markdown_table';
-# use Data::Printer;
 # use Data::Dumper;
 
 has 'Matrix' => (

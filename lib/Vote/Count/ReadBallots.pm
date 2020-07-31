@@ -8,7 +8,6 @@ use Carp;
 use JSON::MaybeXS;
 use YAML::XS;
 # use Data::Dumper;
-use Data::Printer;
 
 # ABSTRACT: Read Ballots for Vote::Count. Toolkit for vote counting.
 

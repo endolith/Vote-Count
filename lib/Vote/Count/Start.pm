@@ -7,7 +7,6 @@ use Path::Tiny 0.108;
 use Carp;
 use Try::Tiny;
 # use Data::Dumper;
-use Data::Printer;
 # use Vote::Count::Method::CondorcetDropping;
 use Vote::Count;
 use Vote::Count::ReadBallots 'read_ballots';

@@ -19,8 +19,6 @@ use Vote::Count::Redact qw/RedactSingle RedactPair RedactBullet/;
 use Vote::Count::Method::CondorcetIRV;
 use Try::Tiny;
 
-use Data::Printer;
-
 our $VERSION='1.06';
 
 # no warnings 'uninitialized';

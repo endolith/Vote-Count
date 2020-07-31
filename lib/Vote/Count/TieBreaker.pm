@@ -11,7 +11,6 @@ no warnings 'experimental';
 use List::Util qw( min max sum );
 use Path::Tiny;
 # use Data::Dumper;
-#use Data::Printer;
 
 our $VERSION='1.06';
 

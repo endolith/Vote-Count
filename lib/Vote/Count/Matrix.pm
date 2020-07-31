@@ -22,7 +22,6 @@ use Sort::Hash;
 use Storable 3.15 'dclone';
 
 # use Try::Tiny;
-#use Data::Printer;
 #use Data::Dumper;
 
 use YAML::XS;

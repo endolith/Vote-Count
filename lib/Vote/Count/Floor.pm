@@ -7,8 +7,6 @@ package Vote::Count::Floor;
 use namespace::autoclean;
 use Moose::Role;
 
-# use Data::Printer;
-
 no warnings 'experimental';
 
 our $VERSION='1.06';

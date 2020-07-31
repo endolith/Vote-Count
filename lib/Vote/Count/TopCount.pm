@@ -14,7 +14,6 @@ use Vote::Count::TextTableTiny 'generate_markdown_table';
 
 use Math::BigRat try => 'GMP';
 use Storable 'dclone';
-use Data::Printer;
 
 # ABSTRACT: TopCount and related methods for Vote::Count. Toolkit for vote counting.
 

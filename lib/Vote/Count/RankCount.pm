@@ -9,7 +9,6 @@ no warnings 'experimental';
 use List::Util qw( min max sum);
 use Vote::Count::TextTableTiny qw/generate_markdown_table/;
 use Sort::Hash;
-# use Data::Printer;
 
 our $VERSION='1.06';
 
