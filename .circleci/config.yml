@@ -25,6 +25,10 @@ jobs:
       - run:
          command:  choco install strawberryperl
          shell: cmd.exe
+# Cheat to install dependencies, install last release.
+      - run:
+         command: c:\strawberry\perl\bin\cpanm.bat Vote::Count
+         shell: cmd.exe   
       - run:
          command: c:\strawberry\perl\bin\prove.bat -l t/*.t
          shell: cmd.exe   
