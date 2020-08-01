@@ -26,7 +26,7 @@ jobs:
          command:  choco install strawberryperl
          shell: cmd.exe
       - run:
-         command: prove -l t/*.t
+         command: c:\strawberry\perl\bin\prove.bat -l t/*.t
          shell: cmd.exe   
 
          
