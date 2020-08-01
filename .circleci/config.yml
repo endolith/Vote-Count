@@ -9,6 +9,8 @@ jobs:
     executor:
       name: win/default # executor type
       size: "medium" # resource class, can be "medium", "large", "xlarge", "2xlarge", defaults to "medium" if not specified
+    environment:
+      PATH: 'c:\strawberry\perl\bin\;%PATH%'
 
     steps:
       # Commands are run in a Windows virtual machine environment
@@ -34,7 +36,6 @@ jobs:
 # Cheat to install dependencies, install last release.
       - run:
          command: c:\strawberry\perl\bin\cpanm.bat Moose
-         working_directory: "%TEMP%"
          shell: cmd.exe   
       - run:
          command: c:\strawberry\perl\bin\perl -v
