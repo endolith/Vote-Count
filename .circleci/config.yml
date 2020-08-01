@@ -25,6 +25,9 @@ jobs:
          command: echo hello & echo world
          shell: cmd.exe
       - run:
+         command: 'echo %PATH%'
+         shell: cmd.exe         
+      - run:
          command:  choco install strawberryperl
          shell: cmd.exe
       - run:
