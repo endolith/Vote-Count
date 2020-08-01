@@ -10,7 +10,7 @@ jobs:
       name: win/default # executor type
       size: "medium" # resource class, can be "medium", "large", "xlarge", "2xlarge", defaults to "medium" if not specified
     environment:
-      PATH: 'c:\strawberry\perl\bin\;%PATH%'
+      PATH: C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;
 
     steps:
       # Commands are run in a Windows virtual machine environment
