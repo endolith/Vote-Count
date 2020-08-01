@@ -33,8 +33,9 @@ jobs:
          shell: bash.exe  
 # Cheat to install dependencies, install last release.
       - run:
-         command: cd /tmp; /c/strawberry/perl/bin/cpanm Moose
-         shell: bash.exe   
+         command: c:\strawberry\perl\bin\cpanm.bat Moose
+         working_directory: %TEMP%
+         shell: cmd.exe   
       - run:
          command: c:\strawberry\perl\bin\perl -v
          shell: cmd.exe
