@@ -33,10 +33,15 @@ jobs:
          shell: bash.exe  
 # Cheat to install dependencies, install last release.
       - run:
-         command: c:\strawberry\perl\bin\cpanm Vote::Count
+         command: /c/strawberry/perl/bin/cpanm Vote::Count
+         shell: bash.exe   
+      - run:
+         command: c:\strawberry\perl\bin\perl -v
          shell: cmd.exe   
       - run:
-         command: c:\strawberry\perl\bin\prove.bat -l t/*.t
-         shell: cmd.exe   
-
+         command: /c/strawberry/perl/bin/prove -l t/*.t
+         shell: bash.exe   
+      # - run:
+      #    command: c:\strawberry\perl\bin\prove.bat -l t/*.t
+      #    shell: cmd.exe   
          
