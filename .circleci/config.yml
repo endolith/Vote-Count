@@ -21,13 +21,16 @@ jobs:
       #    shell: bash.exe
       - run:
          command: echo hello & echo world
-         shell: cmd.exe    
+         shell: cmd.exe
       - run:
          command:  choco install strawberryperl
          shell: cmd.exe
+      - run:
+         command: dir c:\strawberry\perl\bin\
+         shell: cmd.exe         
 # Cheat to install dependencies, install last release.
       - run:
-         command: c:\strawberry\perl\bin\cpanm.bat Vote::Count
+         command: c:\strawberry\perl\bin\cpanm Vote::Count
          shell: cmd.exe   
       - run:
          command: c:\strawberry\perl\bin\prove.bat -l t/*.t
