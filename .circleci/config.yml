@@ -80,7 +80,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - proveonwindows
+      - proveonwindows:
       - proveonlinux:
           matrix:
             parameters:
