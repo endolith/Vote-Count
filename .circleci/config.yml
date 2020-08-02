@@ -36,9 +36,9 @@ jobs:
       # - run:
       #    command: ls -l /c/strawberry/perl/bin/
       #    shell: bash.exe  
-# Cheat to install dependencies, install last release.
+# Cheat to install dependencies, install dependencies from last release.
       - run:
-         command: c:\strawberry\perl\bin\cpanm.bat Moose
+         command: c:\strawberry\perl\bin\cpanm.bat --installdeps Vote::Count
          shell: cmd.exe   
       - run:
          command: c:\strawberry\perl\bin\perl -v
