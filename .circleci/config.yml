@@ -22,30 +22,30 @@ jobs:
       #    command: echo hello && echo world
       #    shell: bash.exe
       - run:
-        command: echo hello & echo world
-        shell: cmd.exe
+          command: echo hello & echo world
+          shell: cmd.exe
       - run:
-        command: 'echo %PATH%'
-        shell: cmd.exe         
+          command: 'echo %PATH%'
+          shell: cmd.exe         
       - run:
-        command:  choco install strawberryperl
-        shell: cmd.exe
+          command:  choco install strawberryperl
+          shell: cmd.exe
       - run:
-        command: dir c:\strawberry\perl\bin\
-        shell: cmd.exe   
+          command: dir c:\strawberry\perl\bin\
+          shell: cmd.exe   
       # - run:
       #    command: ls -l /c/strawberry/perl/bin/
       #    shell: bash.exe  
 # Cheat to install dependencies, install dependencies from last release.
       - run:
-        command: c:\strawberry\perl\bin\cpanm.bat --installdeps Vote::Count
-        shell: cmd.exe   
+          command: c:\strawberry\perl\bin\cpanm.bat --installdeps Vote::Count
+          shell: cmd.exe   
       - run:
-        command: c:\strawberry\perl\bin\perl -v
-        shell: cmd.exe
+          command: c:\strawberry\perl\bin\perl -v
+          shell: cmd.exe
       # - run:
       #    command: /c/strawberry/perl/bin/prove -l t/*.t
       #    shell: bash.exe
       - run:
-        command: c:\strawberry\perl\bin\prove.bat -l t/*.t
-        shell: cmd.exe   
+          command: c:\strawberry\perl\bin\prove.bat -l t/*.t
+          shell: cmd.exe   
