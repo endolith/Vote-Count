@@ -32,7 +32,7 @@ jobs:
          shell: cmd.exe
       - run:
          command: dir c:\strawberry\perl\bin\
-         shell: cmd.exe     
+         shell: cmd.exe   
       # - run:
       #    command: ls -l /c/strawberry/perl/bin/
       #    shell: bash.exe  
