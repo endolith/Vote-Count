@@ -10,6 +10,7 @@ use Test2::Tools::Exception qw/dies lives/;
 
 use Path::Tiny;
 use File::Temp;
+use Data::Dumper;
 
 use Vote::Count;
 use Vote::Count::ReadBallots 'read_ballots';
@@ -50,13 +51,20 @@ ok( stat("$tmp/vc2\.brief"),
 
 isa_ok( $VC2->PairMatrix(), ['Vote::Count::Matrix'], 'Confirm Matrix' );
 
+is_deeply( [ $VC2->GetActiveList() ], 
+           [ $VC2->PairMatrix->GetActiveList() ],
+           'active lists are the same between main object and pairmatrix');
+
 $VC2->SetActive( { 'CHOCOLATE' => 1, 'CARAMEL' => 1, 'VANILLA' => 1 } );
 
-$VC2->UpdatePairMatrix();
+is_deeply( [ $VC2->GetActiveList() ], 
+           [ $VC2->PairMatrix->GetActiveList() ],
+           'after SetActive to main object, active lists are the same between main object and pairmatrix');
+
 is_deeply(
   $VC2->PairMatrix()->ScoreMatrix(),
   { 'CARAMEL' => 0, 'CHOCOLATE' => 1, 'VANILLA' => 2 },
-  'Updated Matrix only scores current choices'
+  'Matrix only scores current choices'
 );
 
 $VC2->UpdatePairMatrix( { 'CARAMEL' => 1, 'VANILLA' => 2 } );
@@ -66,8 +74,12 @@ is_deeply(
   'UpdatePairMatrix with an explicit active set'
 );
 
-is_deeply( $VC2->GetActiveList(), 
-          [ qw/CARAMEL CHOCOLATE VANILLA/],
-          'GetActiveList returns list of active choices');
+note( $VC2->GetActiveList() );
+# is_deeply needs the array as an arrayref
+is_deeply( [ $VC2->GetActiveList() ], 
+           [ qw/CARAMEL CHOCOLATE VANILLA/],
+           'GetActiveList returns list of active choices');
+
+note ( Dumper $VC1->{'Active'});
 
 done_testing();

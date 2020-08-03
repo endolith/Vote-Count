@@ -97,21 +97,21 @@ sub _scoreminmax ( $self, $method ) {
   return $scores;
 }
 
-sub MinMaxPairingVotesTable ( $self, $scores ) {
+sub _pairmatrixtable1 ( $I, $scores ) {
   my @rows = ( [qw/Choice Choice Votes Opponent Votes Score/] );
-  my @choices = sort ( keys $self->Active()->%* );
+  my @choices = sort ( keys $I->Active()->%* );
   for my $Choice (@choices) {
     push @rows, [$Choice];
     for my $Opponent (@choices) {
       my $Cstr = $Choice;
       my $Ostr = $Opponent;
       next if $Opponent eq $Choice;
-      my $CVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Choice};
-      my $OVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Opponent};
-      if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Choice ) {
+      my $CVote = $I->{'Matrix'}{$Choice}{$Opponent}{$Choice};
+      my $OVote = $I->{'Matrix'}{$Choice}{$Opponent}{$Opponent};
+      if ( $I->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Choice ) {
         $Cstr = "**$Cstr**";
       }
-      if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Opponent ) {
+      if ( $I->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Opponent ) {
         $Ostr = "**$Ostr**";
       }
       my $Score = $scores->{$Choice}{$Opponent};
@@ -121,186 +121,63 @@ sub MinMaxPairingVotesTable ( $self, $scores ) {
   return generate_markdown_table( rows => \@rows );
 }
 
+sub _pairmatrixtable2 ( $I, $scores ) {
+  my @rows = ( [qw/Choice Scores/] );
+  my @choices = sort ( keys $I->Active()->%* );
+  for my $Choice (@choices) {
+    my $scores = join ', ', ($scores->{$Choice}{'score'}->@*);
+    push @rows, [ $Choice, $scores ];
+  }
+  return generate_markdown_table( rows => \@rows );
+}
+
+sub MinMaxPairingVotesTable ( $I, $scores ) {
+  my $table1 = $I->_pairmatrixtable1 ( $scores );
+  my $table2 = $I->_pairmatrixtable2 ( $scores );  
+  return "\n$table1\n\n$table2\n" ;
+}
+
+# Matrix will verbose log the setup for regular Condorcet.
+# The output is still left in the debug log.
+sub _clearVerboselog( $I ) { $I->{'LogV'} = '' }
+
 sub MinMax ( $self, $method ) {
-  my $scores = $self->_scoreminmax( $method );
-  $self->logt( 
-    "MinMax $method Choices: ", 
-    join( ', ', $self->GetActiveList()));
-  $self->logv( $self->MinMaxPairingVotesTable( $scores) );
-  ...
+  my $score = $self->_scoreminmax($method);
+  my @active = $self->GetActiveList();
+  $self->_clearVerboselog();
+  $self->logt( "MinMax $method Choices: ", join( ', ', @active ) );
+  $self->logv( $self->MinMaxPairingVotesTable($score) );
+  my $winner = '';
+  my @tied = ();
+  my $round = 0;
+  while ( $round < scalar( @active ) ) {
+    # start with $bestscore larger than any possible score
+    my $bestscore = $self->VotesCast() + 1;
+    my @hasbest = ();
+    for my $a (@active) {
+      my $this = $score->{$a}{'score'}[$round];
+      if ( $this == $bestscore ) { push @hasbest, $a }
+      elsif ( $this < $bestscore ) {
+        $bestscore = $this;
+        @hasbest = ( $a );
+      }
+    }
+    if ( scalar( @hasbest ) == 1 ) {
+      $winner = shift @hasbest;
+      $self->logt( "Winner is $winner.");
+      return { 'tie' => 0, 'tied' => 0, 'winner' => $winner };
+    } 
+    # only choices that are tied continue to tie breaking.
+    @active = @hasbest;
+    # if this is the last round @tied must be set.
+    @tied = @hasbest;
+    $round++;
+    $self->logt( "Tie. Best Score is $bestscore. Going to Tiebreaker Round $round." );
+    $self->logt ( join( ', ', @tied ) );
+  } 
+  $self->logt( "Tied: " . join( ', ', @tied ) );
+  return { 'tie' => 1, 'tied' => \@tied, 'winner' => 0 };
 }
-
-
-=pod
-has 'Matrix' => (
-  isa     => 'Object',
-  is      => 'ro',
-  lazy    => 1,
-  builder => '_newmatrix',
-);
-
-# DropStyle: whether to apply drop rule against
-# all choices ('all') or the least winning ('leastwins').
-has 'DropStyle' => (
-  isa     => 'Str',
-  is      => 'ro',
-  default => 'leastwins',
-);
-
-has 'DropRule' => (
-  isa     => 'Str',
-  is      => 'ro',
-  default => 'plurality',
-);
-
-has 'SkipLoserDrop' => (
-  isa     => 'Int',
-  is      => 'ro',
-  default => 0,
-);
-
-sub GetRound ( $self, $active, $roundnum = '' ) {
-  my $rule = lc( $self->DropRule() );
-  if ( $rule =~ m/(plurality|topcount)/ ) {
-    return $self->TopCount($active);
-  }
-  elsif ( $rule eq 'approval' ) {
-    my $round = $self->Approval($active);
-    $self->logv( "Round $roundnum Approval Totals ", $round->RankTable() );
-    return $round;
-  }
-  elsif ( $rule eq 'borda' ) {
-    my $round = $self->Borda($active);
-    $self->logv( "Round $roundnum Borda Count ", $round->RankTable() );
-    return $round;
-  }
-  elsif ( $rule eq 'greatestloss' ) {
-    return $self->Matrix()->RankGreatestLoss($active);
-  }
-  else {
-    croak "undefined dropping rule $rule requested";
-  }
-}
-
-sub DropChoice ( $self, $round, @jeapardy ) {
-  my %roundvotes = $round->RawCount()->%*;
-  my @eliminate  = ();
-  my $lowest     = $round->CountVotes();
-  for my $j (@jeapardy) {
-    $lowest = $roundvotes{$j} if $roundvotes{$j} < $lowest;
-  }
-  for my $j (@jeapardy) {
-    if ( $roundvotes{$j} == $lowest ) {
-      push @eliminate, $j;
-    }
-  }
-  return @eliminate;
-}
-
-sub _newmatrix ($self) {
-  return Vote::Count::Matrix->new(
-    'BallotSet' => $self->BallotSet(),
-    Active      => $self->Active()
-  );
-}
-
-sub _logstart ( $self, $active ) {
-  my $dropdescription = 'Elimination Rule is Applied to All Active Choices.';
-  if ( $self->DropStyle eq 'leastwins' ) {
-    $dropdescription =
-      'Elimination Rule is Applied to only Choices with the Fewest Wins.';
-  }
-  my $rule = '';
-  if ( $self->DropRule() =~ m/(plurality|topcount)/ ) {
-    $rule = "Drop the Choice With the Lowest TopCount.";
-  }
-  elsif ( $self->DropRule() eq 'approval' ) {
-    $rule = "Drop the Choice With the Lowest Approval.";
-  }
-  elsif ( $self->DropRule() eq 'borda' ) {
-    $rule = "Drop the Choice With the Lowest Borda Score.";
-  }
-  elsif ( $self->DropRule() eq 'greatestloss' ) {
-    $rule = "Drop the Choice With the Greatest Loss.";
-  }
-  else {
-    croak "undefined dropping rule $rule requested";
-  }
-  $self->logt( 'CONDORCET SEQUENTIAL DROPPING METHOD',
-    'CHOICES:', join( ', ', ( sort keys %{$active} ) ) );
-  $self->logv( "Elimination Rule: $rule", $dropdescription );
-}
-
-sub RunCondorcetDropping ( $self, $active = undef ) {
-  unless ( defined $active ) { $active = $self->Active() }
-  my $roundctr = 0;
-  my $maxround = scalar( keys %{$active} );
-  $self->_logstart($active);
-  my $result = { tie => 0, tied => undef, winner => 0 };
-DROPLOOP:
-  until (0) {
-    $roundctr++;
-    die "DROPLOOP infinite stopped at $roundctr" if $roundctr > $maxround;
-    my $topcount = $self->TopCount($active);
-    my $round = $self->GetRound( $active, $roundctr );
-    $self->logv( '---', "Round $roundctr TopCount", $topcount->RankTable() );
-    my $majority = $self->EvaluateTopCountMajority($topcount);
-    if ( defined $majority->{'winner'} ) {
-      $result->{'winner'} = $majority->{'winner'};
-      last DROPLOOP;
-    }
-    my $matrix = Vote::Count::Matrix->new(
-      'BallotSet' => $self->BallotSet,
-      'Active'    => $active
-    );
-    $self->logv( '---', "Round $roundctr Pairings", $matrix->MatrixTable() );
-    my $cw = $matrix->CondorcetWinner() || 0;
-    if ($cw) {
-      my $wstr = "*  Winner $cw  *";
-      my $rpt  = length($wstr);
-      $self->logt( '*' x $rpt, $wstr, '*' x $rpt );
-      $result->{'winner'} = $cw;
-      last DROPLOOP;
-    }
-    my $eliminated =
-      $self->SkipLoserDrop()
-      ? { 'eliminations' => 0 }
-      : $matrix->CondorcetLoser();
-    if ( $eliminated->{'eliminations'} ) {
-      # tracking active between iterations of matrix.
-      $active = $matrix->Active();
-      $self->logv( $eliminated->{'verbose'} );
-      # active changed, restart loop
-      next DROPLOOP;
-    }
-    my @jeapardy = ();
-    if ( $self->DropStyle eq 'leastwins' ) {
-      @jeapardy = $matrix->LeastWins();
-    }
-    else { @jeapardy = keys %{$active} }
-    for my $goodbye ( $self->DropChoice( $round, @jeapardy ) ) {
-      delete $active->{$goodbye};
-      $self->logv("Eliminating $goodbye");
-    }
-    my @remaining = keys $active->%*;
-    if ( @remaining == 0 ) {
-      $self->logt(
-        "All remaining Choices would be eliminated, Tie between @jeapardy");
-      $result->{'tie'}  = 1;
-      $result->{'tied'} = \@jeapardy;
-      last DROPLOOP;
-    }
-    elsif ( @remaining == 1 ) {
-      my $winner = $remaining[0];
-      $self->logt( "Only 1 choice remains.", "** WINNER : $winner **" );
-      $result->{'winner'} = $winner;
-      last DROPLOOP;
-    }
-  };    #infinite DROPLOOP
-  return $result;
-}
-
-=cut
 
 1;
 

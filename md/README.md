@@ -215,6 +215,8 @@ Many Components will take an argument for $activeset or default to the current A
 
 # Vote::Count Methods
 
+Most of these are provided by the Role Common and available directly in both Matrix objects and Vote::Count Objects. Vote::Count objects create a child Matrix object: PairMatrix.
+
 * new
 
 * Active: Get Active Set as HashRef to the active set. Changing the new HashRef will change the internal Active Set, GetActive is recommended as it will return a HashRef that is a copy instead.
@@ -233,7 +235,7 @@ Many Components will take an argument for $activeset or default to the current A
 
 * PairMatrix: Get a Matrix Object for the Active Set. Generated and cached on the first request.
 
-* UpdatePairMatrix: Regenerate and cache Matrix with current Active Set.
+* UpdatePairMatrix: Regenerate and cache Matrix with current Active Set. 
 
 * VotesCast: Returns the number of votes cast.
 

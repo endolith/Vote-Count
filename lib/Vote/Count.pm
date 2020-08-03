@@ -9,7 +9,7 @@ package Vote::Count;
 use namespace::autoclean;
 use Moose;
 
-# use Data::Dumper;
+use Data::Dumper;
 use Time::Piece;
 use Path::Tiny;
 use Vote::Count::Matrix;
@@ -31,39 +31,6 @@ Vote::Count
 # ABSTRACT: Parent Module for Vote::Count. Toolkit for vote counting.
 
 has 'BallotSet' => ( is => 'ro', isa => 'HashRef', required => 1 );
-
-has 'Active' => (
-  is      => 'ro',
-  isa     => 'HashRef',
-  lazy    => 1,
-  builder => '_defaultactive',
-);
-
-sub _defaultactive ( $self ) { return dclone $self->BallotSet()->{'choices'} }
-
-sub SetActive ( $self, $active ) {
-  # Force deref
-  $self->{'Active'} = dclone $active;
-}
-
-sub ResetActive ( $self ) { 
-  $self->{'Active'} = $self->_defaultactive();
-}
-
-# I was typing the equivalent too often. made a method.
-sub SetActiveFromArrayRef ( $self, $active ) {
-  $self->{'Active'} = { map { $_ => 1 } $active->@* };
-}
-
-sub GetActive ( $self ) {
-  # Force deref
-  my $active = $self->Active();
-  return dclone $active;
-}
-
-sub GetActiveList( $self ) {
-  return (sort keys %{$self->Active()}) ;
-}
 
 has TieBreakMethod => (
   is       => 'rw',
@@ -119,6 +86,7 @@ sub BUILD {
 
 # load the roles providing the underlying ops.
 with 
+  'Vote::Count::Common',
   'Vote::Count::Approval',
   'Vote::Count::Borda',
   'Vote::Count::Floor',
@@ -128,41 +96,6 @@ with
   'Vote::Count::TieBreaker',
   'Vote::Count::TopCount',
   ;
-
-sub VotesCast ( $self ) {
-  return $self->BallotSet()->{'votescast'};
-}
-
-sub VotesActive ( $self ) {
-  unless ( $self->BallotSet()->{'options'}{'rcv'} ) {
-    die "VotesActive Method only supports rcv"
-  }
-  my $set         = $self->BallotSet();
-  my $active      = $self->Active();
-  my $activeCount = 0;
-LOOPVOTESACTIVE:
-    for my $B ( values $set->{ballots}->%* ) {
-        for my $V ( $B->{'votes'}->@* ) {
-            if ( defined $active->{$V} ) {
-                $activeCount += $B->{'count'};
-                next LOOPVOTESACTIVE;
-            }
-        }
-    }
-  return $activeCount;
-}
-
-sub BallotSetType ( $self ) {
-  if ( $self->BallotSet()->{'options'}{'rcv'} ) {
-    return 'rcv';
-  }
-  elsif ( $self->BallotSet()->{'options'}{'range'} ) {
-    return 'range';
-  }
-  else {
-    die "BallotSetType is undefined or unknown type.";
-  }
-}
 
 __PACKAGE__->meta->make_immutable;
 1;
@@ -470,7 +403,7 @@ When logging from your methods, use logt for events that produce a summary, use 
 
 =head3 Active Sets
 
-Active sets are typically represented as a Hash Reference where the keys represent the active choices and the value is true. The VoteCount Object contains an Active Set which can be Accessed via the Active() method which will return a reference to the Active Set (changing the reference will change the active set). The GetActive and SetActive methods do not preserve any reference links and should be preferred. GetActiveList returns the Active Set as a sorted list.
+Active sets are typically represented as a Hash Reference where the keys represent the active choices and the value is true. The VoteCount Object contains an Active Set which can be Accessed via the ->Active() method which will return a reference to the Active Set (changing the reference will change the active set). The ->GetActive and ->SetActive do not preserve any reference links and should be preferred.
 
 Many Components will take an argument for $activeset or default to the current Active set of the Vote::Count object, which will default to the Choices defined in the BallotSet.
 

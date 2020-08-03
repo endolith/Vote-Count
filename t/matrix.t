@@ -160,7 +160,7 @@ subtest 'ScoreMatrix' => sub {
     VANILLA   => 2
   };
 
-  $M2->Active($xscored2);
+  $M2->SetActive($xscored2);
   my $scored2 = $M2->ScoreMatrix();
   is_deeply( $scored2, $xscored2,
     'check scoring same data after eliminating some choices' );
@@ -233,7 +233,7 @@ subtest 'CondorcetWinner' => sub {
     '', 'set with no condorcet winner returns empty string' );
   is( $KnotSet->CondorcetWinner(),
     '', 'set with no condorcet winner returns empty string' );
-  $KnotSet->Active( { 'VANILLA' => 1 } );
+  $KnotSet->SetActive( { 'VANILLA' => 1 } );
   is( $KnotSet->CondorcetWinner(), 'VANILLA',
 'reduced Active of last winnerless set to one choice, now returned as winner'
   );

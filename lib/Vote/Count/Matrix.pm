@@ -6,11 +6,13 @@ use feature qw /postderef signatures/;
 package Vote::Count::Matrix;
 use Moose;
 
-with 'Vote::Count::TieBreaker',
+with 
+  'Vote::Count::Common',
   'Vote::Count::Approval',
   'Vote::Count::Borda',
   'Vote::Count::Log',
   'Vote::Count::Score',
+  'Vote::Count::TieBreaker',
   ;
 
 use Vote::Count::RankCount;
@@ -44,23 +46,12 @@ has BallotSet => (
   isa      => 'HashRef',
 );
 
-has Active => (
-  is      => 'rw',
-  isa     => 'HashRef',
-  builder => 'Vote::Count::Matrix::_buildActive',
-  lazy    => 1,
-);
-
 has TieBreakMethod => (
   is       => 'rw',
   isa      => 'Str',
   required => 0,
   default  => 'none',
 );
-
-sub _buildActive ( $self ) {
-  return dclone $self->BallotSet->{'choices'};
-}
 
 sub _untie ( $I, $A, $B ) {
   my @untie = $I->TieBreaker( $I->TieBreakMethod(), $I->Active(), $A, $B );
@@ -249,7 +240,8 @@ sub CondorcetWinner( $self ) {
 sub GreatestLoss ( $self, $A ) {
   my $bigloss = 0;
 GREATESTLOSSLOOP:
-  for my $B ( keys $self->Active()->%* ) {
+  for my $B ( $self->GetActiveList() ) {
+  # for my $B ( keys $self->Active()->%* ) {
     next GREATESTLOSSLOOP if $B eq $A;
     my %result = $self->{'Matrix'}{$A}{$B}->%*;
 # warn "$A : $B loser $result{'loser'} : margin $result{'margin'} $A: $result{$A} $B: $result{$B}";

@@ -155,22 +155,21 @@ subtest 'MinMaxPairingVotesTable' => sub {
   note( $knoxvchtga);
   is( $kcmatches, 2, 
     'Two matches for 83 in knoxville loses to chattanooga' );
-
-ok 1;
 };
 
-# note( $tennessee->PairingVotesTable() );
-# subtest 'Approval Dropping' => sub {
-
-#   note "********** LOOPSET *********";
-#   my $LoopSet = Vote::Count::Method::CondorcetDropping->new(
-#     'BallotSet' => read_ballots('t/data/loop1.txt'),
-#     'DropStyle' => 'all',
-#     'DropRule'  => 'approval',
-#   );
-#   my $rLoopSet = $LoopSet->RunCondorcetDropping();
-#   is( $rLoopSet->{'winner'}, 'VANILLA', 'loopset approval all winner' );
-#   note $LoopSet->logd();
-# };
+subtest 'minmax method' => sub {
+  my $tnwins = $tennessee->MinMax( 'winning');
+  # note( $tennessee->logv() );
+  is( $tnwins->{'winner'}, 'NASHVILLE', 
+    'Check tennessee with \'winning\' that Nashville is winner');
+  my $tnmargin = $tennessee->MinMax( 'margin');
+  # note( $tennessee->logv() );
+  is( $tnmargin->{'winner'}, 'NASHVILLE', 
+    'Check tennessee with \'margin\' that Nashville is winner');
+  my $tnopposition = $tennessee->MinMax( 'opposition');
+  note( $tennessee->logv() );
+  is( $tnopposition->{'winner'}, 'NASHVILLE', 
+    'Check tennessee with \'opposition\' that Nashville is winner');       
+};
 
 done_testing();
