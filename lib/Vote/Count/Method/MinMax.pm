@@ -8,6 +8,7 @@ package Vote::Count::Method::MinMax;
 use namespace::autoclean;
 use Moose;
 extends 'Vote::Count::Matrix';
+with 'Vote::Count::Floor' ;
 
 our $VERSION = '1.06';
 
@@ -91,38 +92,44 @@ sub _scoreminmax ( $self, $method ) {
       $scores->{$Choice}{$Opponent} = $S;
       push @ChoiceLoss, ( $S );
     } # LOOPMMMO:
-    $scores->{$Choice}{Score} = [ reverse sort @ChoiceLoss ] ;
+    $scores->{$Choice}{score} = [ reverse sort @ChoiceLoss ] ;
   }
   return $scores;
 }
 
-# sub PairingVotesTable ( $self ) {
-#   return 'this will generate the minmax pairing votes table someday'
-# }
+sub MinMaxPairingVotesTable ( $self, $scores ) {
+  my @rows = ( [qw/Choice Choice Votes Opponent Votes Score/] );
+  my @choices = sort ( keys $self->Active()->%* );
+  for my $Choice (@choices) {
+    push @rows, [$Choice];
+    for my $Opponent (@choices) {
+      my $Cstr = $Choice;
+      my $Ostr = $Opponent;
+      next if $Opponent eq $Choice;
+      my $CVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Choice};
+      my $OVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Opponent};
+      if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Choice ) {
+        $Cstr = "**$Cstr**";
+      }
+      if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Opponent ) {
+        $Ostr = "**$Ostr**";
+      }
+      my $Score = $scores->{$Choice}{$Opponent};
+      push @rows, [ ' ', $Cstr, $CVote, $Ostr, $OVote, $Score ];
+    }
+  }
+  return generate_markdown_table( rows => \@rows );
+}
 
-# sub PairingVotesTable ( $self ) {
-#   my @rows = ( [qw/Choice Choice Votes Opponent Votes MinMaxMargin/] );
-#   my @choices = sort ( keys $self->Active()->%* );
-#   for my $Choice (@choices) {
-#     push @rows, [$Choice];
-#     for my $Opponent (@choices) {
-#       my $Cstr = $Choice;
-#       my $Ostr = $Opponent;
-#       next if $Opponent eq $Choice;
-#       my $CVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Choice};
-#       my $OVote = $self->{'Matrix'}{$Choice}{$Opponent}{$Opponent};
-#       if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Choice ) {
-#         $Cstr = "**$Cstr**";
-#       }
-#       if ( $self->{'Matrix'}{$Choice}{$Opponent}{'winner'} eq $Opponent ) {
-#         $Ostr = "**$Ostr**";
-#       }
-#       my $MMM = $self->{'Matrix'}{$Choice}{$Opponent}{'MMM'};
-#       push @rows, [ ' ', $Cstr, $CVote, $Ostr, $OVote, $MMM ];
-#     }
-#   }
-#   return generate_markdown_table( rows => \@rows );
-# }
+sub MinMax ( $self, $method ) {
+  my $scores = $self->_scoreminmax( $method );
+  $self->logt( 
+    "MinMax $method Choices: ", 
+    join( ', ', $self->GetActiveList()));
+  $self->logv( $self->MinMaxPairingVotesTable( $scores) );
+  ...
+}
+
 
 =pod
 has 'Matrix' => (

@@ -61,6 +61,10 @@ sub GetActive ( $self ) {
   return dclone $active;
 }
 
+sub GetActiveList( $self ) {
+  return (sort keys %{$self->Active()}) ;
+}
+
 has TieBreakMethod => (
   is       => 'rw',
   isa      => 'Str',
@@ -466,7 +470,7 @@ When logging from your methods, use logt for events that produce a summary, use 
 
 =head3 Active Sets
 
-Active sets are typically represented as a Hash Reference where the keys represent the active choices and the value is true. The VoteCount Object contains an Active Set which can be Accessed via the ->Active() method which will return a reference to the Active Set (changing the reference will change the active set). The ->GetActive and ->SetActive do not preserve any reference links and should be preferred.
+Active sets are typically represented as a Hash Reference where the keys represent the active choices and the value is true. The VoteCount Object contains an Active Set which can be Accessed via the Active() method which will return a reference to the Active Set (changing the reference will change the active set). The GetActive and SetActive methods do not preserve any reference links and should be preferred. GetActiveList returns the Active Set as a sorted list.
 
 Many Components will take an argument for $activeset or default to the current Active set of the Vote::Count object, which will default to the Choices defined in the BallotSet.
 

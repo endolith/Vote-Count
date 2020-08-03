@@ -28,9 +28,9 @@ subtest '_scoreminmax winning' => sub {
   # note( Dumper $loop1->_scoreminmax( 'winning' ) );
   my $A = $tennessee->_scoreminmax( 'winning' );
   my $L = $loop1->_scoreminmax( 'winning' );
-  is_deeply( $A->{'NASHVILLE'}{'Score'}, [ 0, 0, 0 ], 
+  is_deeply( $A->{'NASHVILLE'}{'score'}, [ 0, 0, 0 ], 
   'TN Nashville didnt lose @score is [ 0, 0, 0 ]');
-  is_deeply( $A->{'KNOXVILLE'}{'Score'}, [ 83, 68, 0 ], 
+  is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 83, 68, 0 ], 
   'TN Knoxville  @score is [ 83, 68, 0 ]');
   for my $othertn ( qw/NASHVILLE KNOXVILLE CHATTANOOGA/) {
     is( $A->{'MEMPHIS'}{$othertn}, 58,
@@ -38,7 +38,7 @@ subtest '_scoreminmax winning' => sub {
   }
   my $xmintchip = {
     'ROCKYROAD'=> 0,
-    'Score' => [ 9, 0, 0, 0, 0, 0, 0 ],
+    'score' => [ 9, 0, 0, 0, 0, 0, 0 ],
     'CARAMEL'=> 0,
     'STRAWBERRY' => 0,
     'CHOCOLATE'=> 9,
@@ -48,7 +48,7 @@ subtest '_scoreminmax winning' => sub {
     };
   my $xchocolate = {
     'ROCKYROAD'=> 0,
-    'Score' => [ 9, 0, 0, 0, 0, 0, 0 ],
+    'score' => [ 9, 0, 0, 0, 0, 0, 0 ],
     'CARAMEL'=> 0,
     'STRAWBERRY' => 0,
     'MINTCHIP'=> 0,
@@ -67,9 +67,9 @@ subtest '_scoreminmax margin' => sub {
   my $A = $tennessee->_scoreminmax( 'margin' );
   # note( Dumper $A );
   my $L = $loop1->_scoreminmax( 'margin' );
-  is_deeply( $A->{'NASHVILLE'}{'Score'}, [ 0, 0, 0 ], 
+  is_deeply( $A->{'NASHVILLE'}{'score'}, [ 0, 0, 0 ], 
   'TN Nashville didnt lose @score is [ 0, 0, 0 ]');
-  is_deeply( $A->{'KNOXVILLE'}{'Score'}, [ 66, 36, 0 ], 
+  is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 66, 36, 0 ], 
   'TN Knoxville  @score is [  66, 36, 0 ]');
   for my $othertn ( qw/NASHVILLE KNOXVILLE CHATTANOOGA/) {
     is( $A->{'MEMPHIS'}{$othertn}, 16,
@@ -77,7 +77,7 @@ subtest '_scoreminmax margin' => sub {
   }
   my $xmintchip = {
     'ROCKYROAD'=> 0,
-    'Score' => [ 2, 0, 0, 0, 0, 0, 0 ],
+    'score' => [ 2, 0, 0, 0, 0, 0, 0 ],
     'CARAMEL'=> 0,
     'STRAWBERRY' => 0,
     'CHOCOLATE'=> 2,
@@ -87,7 +87,7 @@ subtest '_scoreminmax margin' => sub {
     };
   my $xchocolate = {
     'ROCKYROAD'=> 0,
-    'Score' => [ 5, 0, 0, 0, 0, 0, 0 ],
+    'score' => [ 5, 0, 0, 0, 0, 0, 0 ],
     'CARAMEL'=> 0,
     'STRAWBERRY' => 0,
     'MINTCHIP'=> 0,
@@ -99,11 +99,67 @@ subtest '_scoreminmax margin' => sub {
     'loop1 Mintchip 1 loss at 2.');
   is_deeply( $L->{'CHOCOLATE'}, $xchocolate, 
     'loop1 this time Chocolate 1 loss at 5.');  
-  ok 1;
 }; # '_scoreminmax margin'
 
-# note( $loop1->PairingVotesTable() );
 
+subtest '_scoreminmax opposition' => sub {
+
+  my $A = $tennessee->_scoreminmax( 'opposition' );
+  # note( Dumper $A );
+  my $L = $loop1->_scoreminmax( 'opposition' );
+  is_deeply( $A->{'NASHVILLE'}{'score'}, [ 42, 32, 32 ], 
+  'TN Nashville scores [ 42, 32, 32 ]');
+  is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 83, 68, 42 ], 
+  'TN Knoxville  @score is [  83, 68, 42 ]');
+  for my $othertn ( qw/NASHVILLE KNOXVILLE CHATTANOOGA/) {
+    is( $A->{'MEMPHIS'}{$othertn}, 58,
+    "TN all other choices scored 58 vs Memphis, check $othertn");
+  }
+  my $xmintchip = {
+    'ROCKYROAD'=> 2,
+    'score' => [ 9, 7, 5, 2, 2, 0, 0 ],
+    'CARAMEL'=> 0,
+    'STRAWBERRY' => 5,
+    'CHOCOLATE'=> 9,
+    'RUMRAISIN'=> 0,
+    'VANILLA'=> 7,
+    'PISTACHIO'=> 2
+    };
+  my $xchocolate = {
+    'ROCKYROAD'=> 2,
+    'score' => [ 9, 7, 2, 2, 1, 1, 0 ],
+    'CARAMEL'=> 1,
+    'STRAWBERRY' => 0,
+    'MINTCHIP'=> 7,
+    'RUMRAISIN'=> 1,
+    'VANILLA'=> 9,
+    'PISTACHIO'=> 2
+    };
+  is_deeply( $L->{'MINTCHIP'}, $xmintchip, 
+    'loop1 Mintchip worst is 9 best is 0.');
+  is_deeply( $L->{'CHOCOLATE'}, $xchocolate, 
+    'loop1 this time Chocolate worst is also 9 best is 0.');  
+}; # '_scoreminmax opposition'
+
+subtest 'MinMaxPairingVotesTable' => sub {
+  my $A = $tennessee->_scoreminmax( 'opposition' );
+  my $output = $tennessee->MinMaxPairingVotesTable( $A );
+  # note( $output );
+  $output =~ m/(.*)\n/;
+  my $head = $1;
+  note( $head);
+  like( $head, qr/| Score |/, "Score is in first row of table");
+  $output =~ m/(KNOXVILLE.*CHATTANOOGA.*)\n/;
+  my $knoxvchtga = $1;
+  my $kcmatches = () = $knoxvchtga =~ m/83 /g;
+  note( $knoxvchtga);
+  is( $kcmatches, 2, 
+    'Two matches for 83 in knoxville loses to chattanooga' );
+
+ok 1;
+};
+
+# note( $tennessee->PairingVotesTable() );
 # subtest 'Approval Dropping' => sub {
 
 #   note "********** LOOPSET *********";

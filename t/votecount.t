@@ -66,4 +66,8 @@ is_deeply(
   'UpdatePairMatrix with an explicit active set'
 );
 
+is_deeply( $VC2->GetActiveList(), 
+          [ qw/CARAMEL CHOCOLATE VANILLA/],
+          'GetActiveList returns list of active choices');
+
 done_testing();
