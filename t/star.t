@@ -47,4 +47,55 @@ subtest 'STAR' => sub {
     'WENDYS', 'another ActiveSet for fastfood' );
 };
 
+subtest 'Coverage Fix' => sub {
+my $fixset = Vote::Count::Method::STAR->new(
+  BallotSet => {
+    'ballots' => [
+        {   'votes' => {
+                'A' => 4,
+                'B' => 5,
+            },
+            'count' => 6
+        },
+        {   'count' => 2,
+            'votes' => {
+                'A' => 5,
+                'C' => 4,
+            }
+        },
+    ],
+    'choices' => {
+        'A' => 1,
+        'B' => 1,
+        'C' => 1,
+    },
+    'depth'   => 5,
+    'options' => {
+        'rcv'   => 0,
+        'range' => 1
+    },
+    'votescast' => 8
+} );
+
+  # note( Dumper $fixset->BallotSet() );
+  is( $fixset->STAR(), 'B', "B wins" );
+  $fixset->{'BallotSet'}{'ballots'} = [
+        {   'votes' => {
+                'A' => 4,
+                'B' => 5,
+            },
+            'count' => 4
+        },
+        {   'count' => 4,
+            'votes' => {
+                'A' => 5,
+                'C' => 2,
+            }
+        },
+    ];
+    
+  is( $fixset->STAR(), 0, "A Tie" );
+};
+
+
 done_testing();

@@ -119,7 +119,7 @@ sub STAR ( $self, $active = undef ) {
   }
   elsif ( $countA < $countB ) {
     $self->logt("Automatic Runoff Winner: $B [ $B: $countB -- $A: $countA ]");
-    return $A;
+    return $B;
   }
   else {
     $self->logt("Automatic Runoff TIE: [ $A: $countA -- $B: $countB ]");

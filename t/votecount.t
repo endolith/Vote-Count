@@ -27,6 +27,13 @@ $VC1->SetActiveFromArrayRef(
   [qw( CHOCOLATE STRAWBERRY PISTACHIO ROCKYROAD)] );
 is( $VC1->VotesActive(), 3, 'with short activelist VotesActive is only 3' );
 
+$VC1->ResetActive();
+is_deeply( 
+  $VC1->GetActive(),
+  $VC1->BallotSet()->{'choices'},
+  'After resetting active the Active Set matches the BallotSet choices'  );
+is( $VC1->VotesActive(), 10, 'after reset VotesActive is 10' );
+
 $VC1->logt('A Terse Entry');
 $VC1->logv('A Verbose Entry');
 $VC1->logd('A Debug Entry');
@@ -74,12 +81,12 @@ is_deeply(
   'UpdatePairMatrix with an explicit active set'
 );
 
-note( $VC2->GetActiveList() );
+# note( $VC2->GetActiveList() );
 # is_deeply needs the array as an arrayref
 is_deeply( [ $VC2->GetActiveList() ], 
            [ qw/CARAMEL CHOCOLATE VANILLA/],
            'GetActiveList returns list of active choices');
 
-note ( Dumper $VC1->{'Active'});
+# note ( Dumper $VC1->{'Active'});
 
 done_testing();
