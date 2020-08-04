@@ -65,14 +65,6 @@ sub _buildmatrix ( $self ) {
   );
 }
 
-sub UpdatePairMatrix ( $self, $active = undef ) {
-  $active = $self->Active() unless defined $active;
-  $self->{'PairMatrix'} = Vote::Count::Matrix->new(
-    BallotSet => $self->BallotSet(),
-    Active    => $active
-  );
-}
-
 sub BUILD {
   my $self = shift;
   # Verbose Log
@@ -412,81 +404,63 @@ Many Components will take an argument for $activeset or default to the current A
 
 Most of these are provided by the Role Common and available directly in both Matrix objects and Vote::Count Objects. Vote::Count objects create a child Matrix object: PairMatrix.
 
-=over
 
-=item *
-
-new
+=head3 new
 
 
+=head3 Active
 
-=item *
-
-Active: Get Active Set as HashRef to the active set. Changing the new HashRef will change the internal Active Set, GetActive is recommended as it will return a HashRef that is a copy instead.
-
+Get Active Set as HashRef to the active set. Changing the new HashRef will change the internal Active Set, GetActive is recommended as it will return a HashRef that is a copy instead.
 
 
-=item *
+=head3 GetActive
 
-GetActive: Returns a hashref containing a copy of the Active Set.
-
-
-
-=item *
-
-GetActiveList: Returns a simple array of the members of the Active Set.
+Returns a hashref containing a copy of the Active Set.
 
 
+=head3 GetActiveList
 
-=item *
-
-ResetActive: Sets the Active Set to the full choices list of the BallotSet.
-
+Returns a simple array of the members of the Active Set.
 
 
-=item *
+=head3 ResetActive
 
-SetActive: Sets the Active Set to provided HashRef. The values to the hashref should evaluate as True.
-
-
-
-=item *
-
-SetActiveFromArrayRef: Same as SetActive except it takes an ArrayRef of the choices to be set as Active.
+Sets the Active Set to the full choices list of the BallotSet.
 
 
+=head3 SetActive
 
-=item *
-
-BallotSet: Get BallotSet
-
+Sets the Active Set to provided HashRef. The values to the hashref should evaluate as True.
 
 
-=item *
+=head3 SetActiveFromArrayRef
 
-PairMatrix: Get a Matrix Object for the Active Set. Generated and cached on the first request.
-
-
-
-=item *
-
-UpdatePairMatrix: Regenerate and cache Matrix with current Active Set. 
+Same as SetActive except it takes an ArrayRef of the choices to be set as Active.
 
 
+=head3 BallotSet
 
-=item *
-
-VotesCast: Returns the number of votes cast.
-
+Get BallotSet
 
 
-=item *
+=head3 PairMatrix
 
-VotesActive: Returns the number of non-exhausted ballots based on the current Active Set.
+Get a Matrix Object for the Active Set. Generated and cached on the first request.
 
 
+=head3 UpdatePairMatrix
 
-=back
+Regenerate and cache Matrix with current Active Set. 
+
+
+=head3 VotesCast
+
+Returns the number of votes cast.
+
+
+=head3 VotesActive
+
+Returns the number of non-exhausted ballots based on the current Active Set.
 
 
 =head1 Minimum Perl Version

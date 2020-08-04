@@ -217,29 +217,51 @@ Many Components will take an argument for $activeset or default to the current A
 
 Most of these are provided by the Role Common and available directly in both Matrix objects and Vote::Count Objects. Vote::Count objects create a child Matrix object: PairMatrix.
 
-* new
+### new
 
-* Active: Get Active Set as HashRef to the active set. Changing the new HashRef will change the internal Active Set, GetActive is recommended as it will return a HashRef that is a copy instead.
+### Active
 
-* GetActive: Returns a hashref containing a copy of the Active Set.
+Get Active Set as HashRef to the active set. Changing the new HashRef will change the internal Active Set, GetActive is recommended as it will return a HashRef that is a copy instead.
 
-* GetActiveList: Returns a simple array of the members of the Active Set.
+### GetActive
 
-* ResetActive: Sets the Active Set to the full choices list of the BallotSet.
+Returns a hashref containing a copy of the Active Set.
 
-* SetActive: Sets the Active Set to provided HashRef. The values to the hashref should evaluate as True.
+### GetActiveList
 
-* SetActiveFromArrayRef: Same as SetActive except it takes an ArrayRef of the choices to be set as Active.
+Returns a simple array of the members of the Active Set.
 
-* BallotSet: Get BallotSet
+### ResetActive
 
-* PairMatrix: Get a Matrix Object for the Active Set. Generated and cached on the first request.
+Sets the Active Set to the full choices list of the BallotSet.
 
-* UpdatePairMatrix: Regenerate and cache Matrix with current Active Set. 
+### SetActive
 
-* VotesCast: Returns the number of votes cast.
+Sets the Active Set to provided HashRef. The values to the hashref should evaluate as True.
 
-* VotesActive: Returns the number of non-exhausted ballots based on the current Active Set.
+### SetActiveFromArrayRef
+
+Same as SetActive except it takes an ArrayRef of the choices to be set as Active.
+
+### BallotSet
+
+Get BallotSet
+
+### PairMatrix
+
+Get a Matrix Object for the Active Set. Generated and cached on the first request.
+
+### UpdatePairMatrix
+
+Regenerate and cache Matrix with current Active Set. 
+
+### VotesCast
+
+Returns the number of votes cast.
+
+### VotesActive
+
+Returns the number of non-exhausted ballots based on the current Active Set.
 
 # Minimum Perl Version
 

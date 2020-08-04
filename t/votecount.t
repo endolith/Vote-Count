@@ -74,19 +74,13 @@ is_deeply(
   'Matrix only scores current choices'
 );
 
-$VC2->UpdatePairMatrix( { 'CARAMEL' => 1, 'VANILLA' => 2 } );
-is_deeply(
-  $VC2->PairMatrix()->ScoreMatrix(),
-  { 'CARAMEL' => 0, 'VANILLA' => 1 },
-  'UpdatePairMatrix with an explicit active set'
-);
-
-# note( $VC2->GetActiveList() );
 # is_deeply needs the array as an arrayref
 is_deeply( [ $VC2->GetActiveList() ], 
            [ qw/CARAMEL CHOCOLATE VANILLA/],
            'GetActiveList returns list of active choices');
 
-# note ( Dumper $VC1->{'Active'});
+$VC2->SetActiveFromArrayRef( [ 'CHOCOLATE', 'MINTCHIP' ]);
+is_deeply( $VC2->Active(), { 'CHOCOLATE' => 1, 'MINTCHIP' => 1},
+  'SetActiveFromArrayRef' );
 
 done_testing();

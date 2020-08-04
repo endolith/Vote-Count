@@ -10,6 +10,7 @@ use Test::Exception;
 use Data::Dumper;
 # use JSON::MaybeXS;
 # use YAML::XS;
+no warnings 'experimental';
 use feature qw /postderef signatures/;
 
 use Path::Tiny;
