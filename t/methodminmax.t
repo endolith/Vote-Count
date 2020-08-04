@@ -25,15 +25,15 @@ my $loop1 =  Vote::Count::Method::MinMax->new(
 
 # useful for debugging 
 sub note_scores ( $minmaxobj, $method ) {
-  my $score = $minmaxobj->_scoreminmax($method );
+  my $score = $minmaxobj->ScoreMinMax($method );
   note( $minmaxobj->_pairmatrixtable2( $score));
 }
 
-subtest '_scoreminmax winning' => sub {
+subtest 'ScoreMinMax winning' => sub {
 
-  # note( Dumper $loop1->_scoreminmax( 'winning' ) );
-  my $A = $tennessee->_scoreminmax( 'winning' );
-  my $L = $loop1->_scoreminmax( 'winning' );
+  # note( Dumper $loop1->ScoreMinMax( 'winning' ) );
+  my $A = $tennessee->ScoreMinMax( 'winning' );
+  my $L = $loop1->ScoreMinMax( 'winning' );
   is_deeply( $A->{'NASHVILLE'}{'score'}, [ 0, 0, 0 ], 
   'TN Nashville didnt lose @score is [ 0, 0, 0 ]');
   is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 83, 68, 0 ], 
@@ -66,13 +66,13 @@ subtest '_scoreminmax winning' => sub {
     'loop1 Mintchip 1 loss at 9.');
   is_deeply( $L->{'CHOCOLATE'}, $xchocolate, 
     'loop1 Chocolate also 1 loss at 9.');  
-}; # '_scoreminmax winning'
+}; # 'ScoreMinMax winning'
 
-subtest '_scoreminmax margin' => sub {
+subtest 'ScoreMinMax margin' => sub {
 
-  my $A = $tennessee->_scoreminmax( 'margin' );
+  my $A = $tennessee->ScoreMinMax( 'margin' );
   # note( Dumper $A );
-  my $L = $loop1->_scoreminmax( 'margin' );
+  my $L = $loop1->ScoreMinMax( 'margin' );
   is_deeply( $A->{'NASHVILLE'}{'score'}, [ 0, 0, 0 ], 
   'TN Nashville didnt lose @score is [ 0, 0, 0 ]');
   is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 66, 36, 0 ], 
@@ -105,14 +105,14 @@ subtest '_scoreminmax margin' => sub {
     'loop1 Mintchip 1 loss at 2.');
   is_deeply( $L->{'CHOCOLATE'}, $xchocolate, 
     'loop1 this time Chocolate 1 loss at 5.');  
-}; # '_scoreminmax margin'
+}; # 'ScoreMinMax margin'
 
 
-subtest '_scoreminmax opposition' => sub {
+subtest 'ScoreMinMax opposition' => sub {
 
-  my $A = $tennessee->_scoreminmax( 'opposition' );
+  my $A = $tennessee->ScoreMinMax( 'opposition' );
   # note( Dumper $A );
-  my $L = $loop1->_scoreminmax( 'opposition' );
+  my $L = $loop1->ScoreMinMax( 'opposition' );
   is_deeply( $A->{'NASHVILLE'}{'score'}, [ 42, 32, 32 ], 
   'TN Nashville scores [ 42, 32, 32 ]');
   is_deeply( $A->{'KNOXVILLE'}{'score'}, [ 83, 68, 42 ], 
@@ -147,16 +147,18 @@ subtest '_scoreminmax opposition' => sub {
     'loop1 this time Chocolate worst is also 9 best is 0.');
   is_deeply( $L->{'STRAWBERRY'}{'score'}, [ 13, 11, 11, 2, 2, 1, 1 ],
     "Stawberry score should be [ 13, 11, 11, 2, 2, 1, 1 ], but once there was a bug where it wasnt.");
-}; # '_scoreminmax opposition'
+}; # 'ScoreMinMax opposition'
 
 subtest 'MinMaxPairingVotesTable' => sub {
-  my $A = $tennessee->_scoreminmax( 'opposition' );
+  my $A = $tennessee->ScoreMinMax( 'opposition' );
   my $output = $tennessee->MinMaxPairingVotesTable( $A );
   # note( $output );
   $output =~ m/(.*)\n/;
   my $head = $1;
   note( $head);
-  like( $head, qr/| Score |/, "Score is in first row of table");
+  like( $head, 
+        qr/| Score |/, 
+        "Score is in first (heading) row of table");
   $output =~ m/(KNOXVILLE.*CHATTANOOGA.*)\n/;
   my $knoxvchtga = $1;
   my $kcmatches = () = $knoxvchtga =~ m/83 /g;
@@ -231,6 +233,23 @@ subtest "Loop 1 dataset, opposition score" => sub {
   unlike( $loop11->logv, 
     qr/Tiebreaker Round 3/,
     'This set *only* goes 2 tiebreaker rounds, no 3rd round');
+  # note( $loop11->logv);
+};
+
+subtest 'setting active to other than the default' => sub {
+  my $bigger = Vote::Count::Method::MinMax->new(
+    'BallotSet' => read_ballots('t/data/biggerset1.txt') );
+  my $remaining = $bigger->TopCountFloor(1);
+  $bigger->SetActive( $remaining );
+  my $bigscores = $bigger->ScoreMinMax( 'opposition' );
+  is_deeply(
+    [ sort keys $bigscores->%* ],
+    [ qw/CHOCOANTS CHOCOLATE MINTCHIP PISTACHIO TOAD VANILLA VOMIT / ],
+    'set with active set changed only scored the correct choices');
+  is_deeply(
+    $bigscores->{'TOAD'}{'score'},
+    [ 149, 122, 108, 21, 3, 3 ],
+    'check the scores for one of those choices');
 };
 
 done_testing();

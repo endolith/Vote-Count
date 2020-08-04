@@ -28,13 +28,13 @@ use Storable 3.15 'dclone';
 
 use YAML::XS;
 
-our $VERSION='1.06';
+our $VERSION='1.07';
 
 =head1 NAME
 
 Vote::Count::Matrix
 
-=head1 VERSION 1.06
+=head1 VERSION 1.07
 
 =cut
 
