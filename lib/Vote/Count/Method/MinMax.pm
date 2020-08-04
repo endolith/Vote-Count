@@ -8,7 +8,7 @@ package Vote::Count::Method::MinMax;
 use namespace::autoclean;
 use Moose;
 extends 'Vote::Count::Matrix';
-with 'Vote::Count::Floor' ;
+with 'Vote::Count::Floor';
 
 our $VERSION = '1.06';
 
@@ -26,14 +26,14 @@ Vote::Count::Method::MinMax
 
 =head1 SYNOPSIS
 
-  my $MinMaxElection =
-    Vote::Count::Method::MinMax->new(
-      'BallotSet' => $ballotset ,
-      'DropStyle' => 'all',
-      'DropRule'  => 'topcount',
-    );
+ my $MinMaxElection =
+ Vote::Count::Method::MinMax->new(
+  'BallotSet' => $ballotset ,
+  'DropStyle' => 'all',
+  'DropRule' => 'topcount',
+ );
 
-  my $Winner = $CondorcetElection->RunCondorcetDropping( $SmithSet )->{'winner'};
+ my $Winner = $CondorcetElection->RunCondorcetDropping( $SmithSet )->{'winner'};
 
 =head1 Shameless Piracy of Electowiki
 
@@ -69,30 +69,34 @@ use Vote::Count::TextTableTiny qw/generate_markdown_table/;
 use List::Util qw( min max );
 use Carp;
 use Try::Tiny;
-# use Data::Dumper;
+use Data::Dumper;
 
 sub _scoreminmax ( $self, $method ) {
   my $scores = {};
   my @choices = sort ( keys $self->Active()->%* );
-  for my $Choice (@choices) {    
+  for my $Choice (@choices) {
     my @ChoiceLoss = ();
-    LOOPMMMO: for my $Opponent (@choices) {
+  LOOPMMMO: for my $Opponent (@choices) {
       next LOOPMMMO if $Opponent eq $Choice;
       my $M = $self->{'Matrix'}{$Choice}{$Opponent};
       my $S = undef;
       if ( $method eq 'opposition' ) {
         $S = $M->{$Opponent};
-      } elsif ( $M->{'winner'} eq $Opponent ) {
-        $S = $M->{$Opponent} if $method eq 'winning' ;
-        $S = $M->{$Opponent} - $M->{ $Choice } if $method eq 'margin' ;  
+      }
+      elsif ( $M->{'winner'} eq $Opponent ) {
+        $S = $M->{$Opponent} if $method eq 'winning';
+        $S = $M->{$Opponent} - $M->{$Choice} if $method eq 'margin';
       }
       else {
         $S = 0;
       }
       $scores->{$Choice}{$Opponent} = $S;
+      # there was a bug where sometimes @ChoiceLoss was sorted
+      # alphanumerically. resolution force the sort to be numeric.
       push @ChoiceLoss, ( $S );
-    } # LOOPMMMO:
-    $scores->{$Choice}{score} = [ reverse sort @ChoiceLoss ] ;
+    }  # LOOPMMMO:
+    $scores->{$Choice}{score}
+      = [ reverse sort { $a <=> $b } @ChoiceLoss ];
   }
   return $scores;
 }
@@ -125,16 +129,16 @@ sub _pairmatrixtable2 ( $I, $scores ) {
   my @rows = ( [qw/Choice Scores/] );
   my @choices = sort ( keys $I->Active()->%* );
   for my $Choice (@choices) {
-    my $scores = join ', ', ($scores->{$Choice}{'score'}->@*);
+    my $scores = join ', ', ( $scores->{$Choice}{'score'}->@* );
     push @rows, [ $Choice, $scores ];
   }
   return generate_markdown_table( rows => \@rows );
 }
 
 sub MinMaxPairingVotesTable ( $I, $scores ) {
-  my $table1 = $I->_pairmatrixtable1 ( $scores );
-  my $table2 = $I->_pairmatrixtable2 ( $scores );  
-  return "\n$table1\n\n$table2\n" ;
+  my $table1 = $I->_pairmatrixtable1($scores);
+  my $table2 = $I->_pairmatrixtable2($scores);
+  return "\n$table1\n\n$table2\n";
 }
 
 # Matrix will verbose log the setup for regular Condorcet.
@@ -148,33 +152,42 @@ sub MinMax ( $self, $method ) {
   $self->logt( "MinMax $method Choices: ", join( ', ', @active ) );
   $self->logv( $self->MinMaxPairingVotesTable($score) );
   my $winner = '';
-  my @tied = ();
+  my @tied  = ();
   my $round = 0;
-  while ( $round < scalar( @active ) ) {
+  # round inited to 0. The 7th round is 6. round increments at 
+  # end of the loop. this sets correct number of rounds.
+  my $roundlimit = scalar(@active) -1;
+  LOOPMINMAX: while ( $round < $roundlimit ) {
     # start with $bestscore larger than any possible score
     my $bestscore = $self->VotesCast() + 1;
-    my @hasbest = ();
+    my @hasbest  = ();
     for my $a (@active) {
       my $this = $score->{$a}{'score'}[$round];
       if ( $this == $bestscore ) { push @hasbest, $a }
       elsif ( $this < $bestscore ) {
         $bestscore = $this;
-        @hasbest = ( $a );
+        @hasbest  = ($a);
       }
     }
-    if ( scalar( @hasbest ) == 1 ) {
+    if ( scalar(@hasbest) == 1 ) {
       $winner = shift @hasbest;
-      $self->logt( "Winner is $winner.");
-      return { 'tie' => 0, 'tied' => 0, 'winner' => $winner };
-    } 
+      $self->logt("Winner is $winner.");
+      return { 'tie' => 0, 'winner' => $winner };
+    }
     # only choices that are tied continue to tie breaking.
     @active = @hasbest;
     # if this is the last round @tied must be set.
     @tied = @hasbest;
+    if( $bestscore == 0 ) {
+      $self->logt(
+        "Tie between @tied. Best Score is 0. No more Tiebreakers available." );
+      last LOOPMINMAX;
+    }
     $round++;
-    $self->logt( "Tie. Best Score is $bestscore. Going to Tiebreaker Round $round." );
-    $self->logt ( join( ', ', @tied ) );
-  } 
+    $self->logt(
+      "Tie between @tied. Best Score is $bestscore. Going to Tiebreaker Round $round."
+    );
+  }
   $self->logt( "Tied: " . join( ', ', @tied ) );
   return { 'tie' => 1, 'tied' => \@tied, 'winner' => 0 };
 }

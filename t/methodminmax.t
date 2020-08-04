@@ -23,6 +23,12 @@ my $tennessee = Vote::Count::Method::MinMax->new(
 my $loop1 =  Vote::Count::Method::MinMax->new(
     'BallotSet' => read_ballots('t/data/loop1.txt') );
 
+# useful for debugging 
+sub note_scores ( $minmaxobj, $method ) {
+  my $score = $minmaxobj->_scoreminmax($method );
+  note( $minmaxobj->_pairmatrixtable2( $score));
+}
+
 subtest '_scoreminmax winning' => sub {
 
   # note( Dumper $loop1->_scoreminmax( 'winning' ) );
@@ -138,7 +144,9 @@ subtest '_scoreminmax opposition' => sub {
   is_deeply( $L->{'MINTCHIP'}, $xmintchip, 
     'loop1 Mintchip worst is 9 best is 0.');
   is_deeply( $L->{'CHOCOLATE'}, $xchocolate, 
-    'loop1 this time Chocolate worst is also 9 best is 0.');  
+    'loop1 this time Chocolate worst is also 9 best is 0.');
+  is_deeply( $L->{'STRAWBERRY'}{'score'}, [ 13, 11, 11, 2, 2, 1, 1 ],
+    "Stawberry score should be [ 13, 11, 11, 2, 2, 1, 1 ], but once there was a bug where it wasnt.");
 }; # '_scoreminmax opposition'
 
 subtest 'MinMaxPairingVotesTable' => sub {
@@ -157,7 +165,7 @@ subtest 'MinMaxPairingVotesTable' => sub {
     'Two matches for 83 in knoxville loses to chattanooga' );
 };
 
-subtest 'minmax method' => sub {
+subtest 'minmax method tennessee' => sub {
   my $tnwins = $tennessee->MinMax( 'winning');
   # note( $tennessee->logv() );
   is( $tnwins->{'winner'}, 'NASHVILLE', 
@@ -167,9 +175,62 @@ subtest 'minmax method' => sub {
   is( $tnmargin->{'winner'}, 'NASHVILLE', 
     'Check tennessee with \'margin\' that Nashville is winner');
   my $tnopposition = $tennessee->MinMax( 'opposition');
-  note( $tennessee->logv() );
+  # note( $tennessee->logv() );
   is( $tnopposition->{'winner'}, 'NASHVILLE', 
-    'Check tennessee with \'opposition\' that Nashville is winner');       
+    'Check tennessee with \'opposition\' that Nashville is winner');
+};
+
+subtest '"Loop 1 dataset, winning score"' => sub {
+  my $loop11 =  Vote::Count::Method::MinMax->new(
+    'BallotSet' => read_ballots('t/data/loop1.txt') );
+  # note_scores( $loop11, 'winning');
+  is_deeply(
+    $loop11->MinMax('winning'),
+      { 'tie' => 1, 
+        'tied' => [ 'CHOCOLATE', 'MINTCHIP'], 
+        'winner' => 0 },
+    "Tie with this method."
+    );
+  like( $loop11->logv, 
+    qr/Tiebreaker Round 1/,
+    'This set goes 1 tiebreaker round');
+  unlike( $loop11->logv, 
+    qr/Tiebreaker Round 2/,
+    'This set *only* goes 1 tiebreaker round, no 2nd round');
+};
+
+subtest "Loop 1 dataset, margin score" => sub {
+  my $loop11 =  Vote::Count::Method::MinMax->new(
+    'BallotSet' => read_ballots('t/data/loop1.txt') );
+  # note_scores( $loop11, 'margin');
+  is_deeply(
+    $loop11->MinMax('margin'),
+      { 'tie' => 0, 'winner' => 'MINTCHIP' },
+    "Immediate Winner with this method."
+    );
+  unlike( $loop11->logv, 
+    qr/Tiebreaker Round/,
+    'No tiebreaker round');
+  like( $loop11->logv, 
+    qr/Winner is MINTCHIP/,
+    'log reports Winner');
+};
+
+subtest "Loop 1 dataset, opposition score" => sub {
+  my $loop11 =  Vote::Count::Method::MinMax->new(
+    'BallotSet' => read_ballots('t/data/loop1.txt') );
+  # note_scores( $loop11, 'opposition');
+  is_deeply(
+    $loop11->MinMax('opposition'),
+      { 'tie' => 0, 'winner' => 'CHOCOLATE' },
+    "Winner with this method (2 rounds tiebreaker)."
+    );
+  like( $loop11->logv, 
+    qr/Tiebreaker Round 2/,
+    'This set goes 2 tiebreaker rounds');
+  unlike( $loop11->logv, 
+    qr/Tiebreaker Round 3/,
+    'This set *only* goes 2 tiebreaker rounds, no 3rd round');
 };
 
 done_testing();
